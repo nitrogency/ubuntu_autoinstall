@@ -21,6 +21,8 @@ parser.add_argument("-s", "--ssh", type=str, help="The path to the public ssh ke
 parser.add_argument("-t", "--time", default=10, type=str, help="The timeout you want to assign to the bootloader. (Default - 10)")
 args = parser.parse_args()
 
+GRUB_CONFIG = "grub.cfg"
+
 def get_output_path():
     # Output path check
     if args.output:
@@ -120,7 +122,7 @@ def edit_iso():
     print("Added server files")
     
     iso.rm_file("/BOOT/GRUB/GRUB.CFG;1", rr_name='grub.cfg')
-    iso.add_file("grub.cfg", "/BOOT/GRUB/GRUB.CFG;1", rr_name='grub.cfg')
+    iso.add_file(GRUB_CONFIG, "/BOOT/GRUB/GRUB.CFG;1", rr_name='grub.cfg')
     iso.add_eltorito('/BOOT/GRUB/GRUB.CFG;1')
     print("Edited grub")
     
@@ -196,7 +198,7 @@ def generate_grub():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     print("Creating grub.cfg...")
 
-    f = open("grub.cfg", "w")
+    f = open(GRUB_CONFIG, "w")
     f.write(f"set timeout={args.time}\n")
     f.write("loadfont unicode\n")
     f.write("set menu_color_normal=white/black\n")
@@ -239,8 +241,8 @@ def cleanup():
         os.remove("user-data")
     if os.path.exists("meta-data"):
         os.remove("meta-data")
-    if os.path.exists("grub.cfg"):
-        os.remove("grub.cfg")
+    if os.path.exists(GRUB_CONFIG):
+        os.remove(GRUB_CONFIG)
 
 def get_input():
     get_output_path()
