@@ -75,6 +75,10 @@ def check_for_iso(directory):
 def download_iso(version, output_directory):
     url = f"https://releases.ubuntu.com/{version}/"
     response = requests.get(url)
+
+    if response.status_code != 200:
+        print("Given ISO version could not be found.")
+        exit(1)
     response.raise_for_status()
 
     match = re.search(r'href="(ubuntu-.*-server.*\.iso)"', response.text)
@@ -126,7 +130,10 @@ def edit_iso():
     iso.add_eltorito('/BOOT/GRUB/GRUB.CFG;1')
     print("Edited grub")
     
-    iso.write(args.output + "/output.iso")
+    if args.output.endswith(".iso"):
+        iso.write(args.output)
+    else:
+        iso.write(args.output + "/output.iso")
 
     iso.close()
 
@@ -134,7 +141,7 @@ def edit_iso():
 def get_config():
     # User-data config file check
     if args.config:
-        if(os.path.exists(args.config)):
+        if os.path.exists(args.config):
             clone_data()
             print(f"Using provided config file: {args.config}")
         else:
