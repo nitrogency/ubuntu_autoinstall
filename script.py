@@ -10,6 +10,8 @@ import collections
 import re
 import os
 
+
+
 parser = argparse.ArgumentParser(description="A simple Ubuntu Server autoinstall script.")
 parser.add_argument("-i", "--iso", type=str, help="The path to the original ISO image. (If none provided - downloaded from releases.ubuntu.com)")
 parser.add_argument("-v", "--version", type=str, help="The version of Ubuntu Server you want to download. (Default - 22.04)")
@@ -56,6 +58,7 @@ def get_iso():
                 download_iso(args.version, args.output)
                 
 def check_for_iso(directory):
+    # Checks if there are any ISOs in the script's directory
     for filename in os.listdir(directory):
         if "ubuntu" in filename and filename.endswith(".iso"):
             print(f"Found already existing ISO: {filename}")
@@ -81,7 +84,7 @@ def download_iso(version, output_directory):
 
     file_name = os.path.basename(iso_url)
 
-    # Download the ISO file
+    # Downloads the named ISO file
     print(f"Downloading Ubuntu Server {version} ISO from {iso_url}...")
     os.chdir(output_directory)
     with requests.get(iso_url, stream=True) as r:
@@ -92,7 +95,22 @@ def download_iso(version, output_directory):
     print(f"Download complete: {file_name}")
     args.iso = os.path.join(output_directory, file_name)
 
+def clone_data():
+    # Clones data from provided user-data file (if provided)
+    f = open(args.config, "r")
+    config = f.read()
+    f.close()
+
+    f = open("user-data", "w")
+    f.write(config)
+    f.close()
+
+    f = open("meta-data", "w")
+    f.close()
+    
+
 def edit_iso():
+    # ISO editing function
     iso = pycdlib.PyCdlib()
     iso.open(args.iso)
     
@@ -115,6 +133,7 @@ def get_config():
     # User-data config file check
     if args.config:
         if(os.path.exists(args.config)):
+            clone_data()
             print(f"Using provided config file: {args.config}")
         else:
             print(f"Config file not found: {args.config}")
@@ -123,6 +142,7 @@ def get_config():
         print("No config file provided. Generating one.")
         generate_config()    
 def write_key(ssh_key):
+    # Writes public ssh key to user-data file, whether given through argument or input
     if os.path.exists(ssh_key) and ssh_key.endswith(".pub"):
         f = open("user-data", "a")
         f.write("  ssh:\n")
@@ -136,6 +156,7 @@ def write_key(ssh_key):
     else:
         return None
 def generate_config():
+    # Generates basic config file
     import hashlib
 
     hostname = input("Hostname (ENTER for default - 'ubuntu-server'): ") or "ubuntu-server"
@@ -171,6 +192,7 @@ def generate_config():
     print(f"User-data config file generated: {os.getcwd()}/user-data")
 
 def generate_grub():
+    # Generates grub bootloader config
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     print("Creating grub.cfg...")
 
@@ -210,6 +232,15 @@ def generate_grub():
 
     print("grub.cfg successfully generated.")
 
+def cleanup():
+    # Removes generated files
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    if os.path.exists("user-data") and args.config is None:
+        os.remove("user-data")
+    if os.path.exists("meta-data"):
+        os.remove("meta-data")
+    if os.path.exists("grub.cfg"):
+        os.remove("grub.cfg")
 
 def get_input():
     get_output_path()
@@ -217,6 +248,7 @@ def get_input():
     get_config()
     generate_grub()
     edit_iso()
+    cleanup()
     
 if __name__ == "__main__":
     get_input()
