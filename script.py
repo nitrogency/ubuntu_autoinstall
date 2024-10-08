@@ -9,8 +9,9 @@ import requests
 import collections
 import re
 import os
+import warnings
 
-
+warnings.filterwarnings("ignore", category=DeprecationWarning) # For crypt module
 
 parser = argparse.ArgumentParser(description="A simple Ubuntu Server autoinstall script.")
 parser.add_argument("-i", "--iso", type=str, help="The path to the original ISO image. (If none provided - downloaded from releases.ubuntu.com)")
@@ -166,11 +167,12 @@ def write_key(ssh_key):
         return None
 def generate_config():
     # Generates basic config file
-    import hashlib
+    import crypt
+    import getpass
 
     hostname = input("Hostname (ENTER for default - 'ubuntu-server'): ") or "ubuntu-server"
     username = input("Username (ENTER for default - 'ubuntu'): ") or "ubuntu"
-    password = hashlib.sha512(input("Password (ENTER for default - 'ubuntu'): ").encode('utf-8')).hexdigest() or "$6$8h9rdUGI5jgt6UuX$RV6oDFTsO8kMcHObuv0JlDI3ET5rRoxh.pEyT6LHAtE/gZtEgG9RQninlaeUlyvN36wz6xLGOhKoVh1AcoL4F."
+    password = crypt.crypt(getpass.getpass(), crypt.METHOD_SHA512)
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     f = open("meta-data", "w")
     f.close()
@@ -182,7 +184,7 @@ def generate_config():
     f.write("  identity:\n")
     f.write(f"    hostname: {hostname}\n")
     f.write(f"    username: {username}\n")
-    f.write(f"    password: {password}\n")
+    f.write(f"    password: '{password}'\n")
     print("User created successfully.")
     f.close()
     if(args.ssh is not None):
