@@ -7,6 +7,13 @@ Takes a list of arguments and creates an automated Ubuntu install ISO from a reg
 Can also generate `user-data` for testing or demo purposes. 
 
 **Basic usage:**
+
+Install requirements:
+
+```
+pip install -r requirements.txt
+```
+Start script:
 ```
 python3 script.py -h
 ```
