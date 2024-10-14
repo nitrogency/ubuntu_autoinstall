@@ -11,8 +11,6 @@ import re
 import os
 import warnings
 
-warnings.filterwarnings("ignore", category=DeprecationWarning) # For crypt module
-
 parser = argparse.ArgumentParser(description="A simple Ubuntu Server autoinstall script.")
 parser.add_argument("-i", "--iso", type=str, help="The path to the original ISO image. (If none provided - downloaded from releases.ubuntu.com)")
 parser.add_argument("-v", "--version", type=str, help="The version of Ubuntu Server you want to download. (Default - 22.04)")
@@ -93,7 +91,6 @@ def download_iso(version, output_directory):
 
     # Downloads the named ISO file
     print(f"Downloading Ubuntu Server {version} ISO from {iso_url}...")
-    os.chdir(output_directory)
     with requests.get(iso_url, stream=True) as r:
         r.raise_for_status()
         with open(file_name, 'wb') as f:
@@ -167,12 +164,13 @@ def write_key(ssh_key):
         return None
 def generate_config():
     # Generates basic config file
-    import crypt
+    from passlib.hosts import linux_context
     import getpass
 
     hostname = input("Hostname (ENTER for default - 'ubuntu-server'): ") or "ubuntu-server"
     username = input("Username (ENTER for default - 'ubuntu'): ") or "ubuntu"
-    password = crypt.crypt(getpass.getpass(), crypt.METHOD_SHA512)
+    
+    password = linux_context.hash(getpass.getpass())
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     f = open("meta-data", "w")
     f.close()
