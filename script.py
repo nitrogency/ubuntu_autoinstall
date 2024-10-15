@@ -178,6 +178,7 @@ def generate_config():
     f = open("user-data", "w")
     f.write("#cloud-config\n")
     f.write("autoinstall:\n")
+    f.write("  shutdown: poweroff\n")
     f.write("  version: 1\n")
     f.write("  identity:\n")
     f.write(f"    hostname: {hostname}\n")
