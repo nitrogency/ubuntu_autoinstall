@@ -4,3 +4,6 @@ idna==3.10
 pycdlib==1.14.0
 requests==2.32.3
 urllib3==2.2.3
+altgraph==0.17.4
+packaging==24.1
+passlib==1.7.4
