@@ -154,7 +154,7 @@ def write_key(ssh_key):
         f = open("user-data", "a")
         f.write("  ssh:\n")
         f.write("    install-server: true\n")
-        f.write("    authorized_keys:\n")
+        f.write("    authorized-keys:\n")
         k = open(ssh_key, "r")
         f.write("      - " + k.read())
         
